@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: incidents_postgres
+    environment:
+      POSTGRES_DB: incidents_db
+      POSTGRES_USER: incidents_user
+      POSTGRES_PASSWORD: incidents_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - incidents_network
+
+  backend:
+    build: ./backend
+    container_name: incidents_backend
+    ports:
+      - "8080:8080"
+    environment:
+      POSTGRES_USER: incidents_user
+      POSTGRES_PASSWORD: incidents_pass
+      POSTGRES_DB: incidents_db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/incidents_db
+    depends_on:
+      - postgres
+    networks:
+      - incidents_network
+
+volumes:
+  postgres_data:
+
+networks:
+  incidents_network:
+    driver: bridge
