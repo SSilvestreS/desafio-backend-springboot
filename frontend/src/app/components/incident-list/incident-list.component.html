@@ -1,0 +1,271 @@
+<div class="incident-list-container">
+  <!-- Cabeçalho com estatísticas -->
+  <div class="stats-header">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">{{ stats.total }}</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat-card status-open">
+        <div class="stat-number">{{ stats.abertos }}</div>
+        <div class="stat-label">Abertos</div>
+      </div>
+      <div class="stat-card status-in-progress">
+        <div class="stat-number">{{ stats.emAndamento }}</div>
+        <div class="stat-label">Em Andamento</div>
+      </div>
+      <div class="stat-card status-resolved">
+        <div class="stat-number">{{ stats.resolvidos }}</div>
+        <div class="stat-label">Resolvidos</div>
+      </div>
+      <div class="stat-card status-cancelled">
+        <div class="stat-number">{{ stats.cancelados }}</div>
+        <div class="stat-label">Cancelados</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters-section">
+    <form [formGroup]="filterForm" class="filters-form">
+      <div class="filters-row">
+        <div class="filter-group">
+          <label for="status-filter">Status</label>
+          <select id="status-filter" formControlName="status" class="filter-control">
+            <option value="">Todos os status</option>
+            <option *ngFor="let status of statuses" [value]="status">
+              {{ status }}
+            </option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="prioridade-filter">Prioridade</label>
+          <select id="prioridade-filter" formControlName="prioridade" class="filter-control">
+            <option value="">Todas as prioridades</option>
+            <option *ngFor="let prioridade of prioridades" [value]="prioridade">
+              {{ prioridade }}
+            </option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="search-filter">Busca</label>
+          <input 
+            type="text" 
+            id="search-filter" 
+            formControlName="q" 
+            class="filter-control"
+            placeholder="Buscar por título ou descrição..."
+          >
+        </div>
+
+        <div class="filter-group">
+          <label for="tags-filter">Tags</label>
+          <input 
+            type="text" 
+            id="tags-filter" 
+            formControlName="tags" 
+            class="filter-control"
+            placeholder="Filtrar por tags..."
+          >
+        </div>
+      </div>
+
+      <div class="filters-actions">
+        <button 
+          type="button" 
+          class="btn btn-secondary" 
+          (click)="clearFilters()"
+        >
+          Limpar Filtros
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Ações principais -->
+  <div class="actions-section">
+    <button 
+      class="btn btn-primary" 
+      (click)="createIncident()"
+    >
+      + Novo Incidente
+    </button>
+  </div>
+
+  <!-- Mensagem de erro -->
+  <div class="alert alert-error" *ngIf="error">
+    {{ error }}
+  </div>
+
+  <!-- Tabela de incidentes -->
+  <div class="table-container">
+    <table class="incidents-table">
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Status</th>
+          <th>Prioridade</th>
+          <th>Responsável</th>
+          <th>Data Abertura</th>
+          <th>Tags</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let incident of incidents" class="incident-row">
+          <td class="incident-title">
+            <a (click)="viewIncident(incident)" class="title-link">
+              {{ incident.titulo }}
+            </a>
+            <div class="incident-description" *ngIf="incident.descricao">
+              {{ incident.descricao | slice:0:100 }}{{ incident.descricao.length > 100 ? '...' : '' }}
+            </div>
+          </td>
+          <td>
+            <span class="status-badge" [class]="getStatusClass(incident.status)">
+              {{ incident.status }}
+            </span>
+          </td>
+          <td>
+            <span class="priority-badge" [class]="getPriorityClass(incident.prioridade)">
+              {{ incident.prioridade }}
+            </span>
+          </td>
+          <td class="responsible-email">
+            {{ incident.responsavelEmail }}
+          </td>
+          <td class="date-column">
+            {{ formatDate(incident.dataAbertura) }}
+          </td>
+          <td class="tags-column">
+            <div class="tags-list" *ngIf="incident.tags && incident.tags.length > 0">
+              <span *ngFor="let tag of incident.tags" class="tag">
+                {{ tag }}
+              </span>
+            </div>
+            <span *ngIf="!incident.tags || incident.tags.length === 0" class="no-tags">
+              Sem tags
+            </span>
+          </td>
+          <td class="actions-column">
+            <div class="action-buttons">
+              <button 
+                class="btn-icon btn-view" 
+                (click)="viewIncident(incident)"
+                title="Visualizar"
+              >
+                👁️
+              </button>
+              <button 
+                class="btn-icon btn-edit" 
+                (click)="editIncident(incident)"
+                title="Editar"
+              >
+                ✏️
+              </button>
+              <button 
+                class="btn-icon btn-delete" 
+                (click)="deleteIncident(incident)"
+                title="Excluir"
+              >
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Estado de carregamento -->
+    <div *ngIf="loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Carregando incidentes...</p>
+    </div>
+
+    <!-- Estado vazio -->
+    <div *ngIf="!loading && incidents.length === 0" class="empty-state">
+      <p>Nenhum incidente encontrado</p>
+      <button class="btn btn-primary" (click)="createIncident()">
+        Criar primeiro incidente
+      </button>
+    </div>
+  </div>
+
+  <!-- Paginação -->
+  <div class="pagination-section" *ngIf="totalPages > 1">
+    <div class="pagination-info">
+      <span>
+        Mostrando {{ (currentPage * pageSize) + 1 }} a {{ (currentPage + 1) * pageSize > totalElements ? totalElements : (currentPage + 1) * pageSize }} 
+        de {{ totalElements }} incidentes
+      </span>
+    </div>
+
+    <div class="pagination-controls">
+      <button 
+        class="btn btn-secondary" 
+        [disabled]="currentPage === 0"
+        (click)="onPageChange(currentPage - 1)"
+      >
+        Anterior
+      </button>
+
+      <div class="page-numbers">
+        <button 
+          *ngFor="let page of getPageNumbers()" 
+          class="page-number"
+          [class.active]="page === currentPage"
+          (click)="onPageChange(page)"
+        >
+          {{ page + 1 }}
+        </button>
+      </div>
+
+      <button 
+        class="btn btn-secondary" 
+        [disabled]="currentPage === totalPages - 1"
+        (click)="onPageChange(currentPage + 1)"
+      >
+        Próximo
+      </button>
+    </div>
+
+    <div class="page-size-control">
+      <label for="page-size">Itens por página:</label>
+      <select 
+        id="page-size" 
+        [value]="pageSize" 
+        (change)="onPageSizeChange(+$any($event.target).value)"
+        class="page-size-select"
+      >
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmação de exclusão -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="cancelDelete()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Confirmar Exclusão</h3>
+    </div>
+    <div class="modal-body">
+      <p>Tem certeza que deseja excluir o incidente <strong>"{{ incidentToDelete?.titulo }}"</strong>?</p>
+      <p class="warning-text">Esta ação não pode ser desfeita e também excluirá todos os comentários associados.</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" (click)="cancelDelete()">
+        Cancelar
+      </button>
+      <button class="btn btn-danger" (click)="confirmDelete()" [disabled]="loading">
+        <span *ngIf="loading" class="loading-spinner"></span>
+        {{ loading ? 'Excluindo...' : 'Excluir' }}
+      </button>
+    </div>
+  </div>
+</div>

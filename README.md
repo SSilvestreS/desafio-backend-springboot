@@ -1,216 +1,345 @@
-# Sistema de Gestão de Ocorrências
+# Sistema de Gestão de Incidentes
 
-Sistema fullstack para gestão de incidentes e ocorrências com backend Spring Boot e frontend Angular.
+Aplicação fullstack para gestão de incidentes desenvolvida com Spring Boot 3+ e Angular 16+.
+
+## Descrição
+
+Sistema completo de gestão de incidentes com funcionalidades de CRUD, autenticação JWT, cache com Caffeine, documentação Swagger e deploy containerizado.
 
 ## Tecnologias Utilizadas
 
 ### Backend
-- Java 17
+- Java 17+
 - Spring Boot 3.2.0
 - Spring Security com JWT
 - Spring Data JPA
-- PostgreSQL
-- Flyway (Migrations)
+- PostgreSQL 15
+- Flyway (migrations)
+- Caffeine (cache)
 - Swagger/OpenAPI
 
 ### Frontend
 - Angular 16+
-- Angular Material
+- TypeScript
+- Reactive Forms
+- Angular Router
+- HttpClient
 - RxJS
+
+### Infraestrutura
+- Docker
+- Docker Compose
+- Nginx
+
+## Pré-requisitos
+
+- Docker Desktop instalado e rodando
+- Git
+- Maven (opcional, para desenvolvimento local)
+- Node.js (opcional, para desenvolvimento local)
 
 ## Estrutura do Projeto
 
 ```
-├── backend/                 # Backend Spring Boot
+desafio-fullstack-springboot/
+├── backend/                    # Aplicação Spring Boot
 │   ├── src/main/java/
 │   │   └── com/incidents/
-│   │       ├── config/      # Configurações
-│   │       ├── controller/  # Controllers REST
-│   │       ├── dto/         # Data Transfer Objects
-│   │       ├── model/       # Entidades JPA
-│   │       ├── repository/  # Repositórios
-│   │       └── security/    # Configurações de segurança
+│   │       ├── controller/     # Controllers REST
+│   │       ├── model/         # Entidades JPA
+│   │       ├── repository/    # Repositórios JPA
+│   │       ├── security/      # Configurações de segurança
+│   │       ├── util/          # Utilitários (DRY)
+│   │       └── dto/           # Data Transfer Objects
 │   ├── src/main/resources/
-│   │   ├── db/migration/    # Migrations Flyway
-│   │   └── application.yml  # Configurações
-│   └── Dockerfile
-├── frontend/                # Frontend Angular
-└── docker-compose.yml       # Orquestração dos containers
+│   │   ├── application.yml    # Configurações
+│   │   └── db/migration/      # Migrations Flyway
+│   └── pom.xml
+├── frontend/                   # Aplicação Angular
+│   ├── src/app/
+│   │   ├── components/        # Componentes Angular
+│   │   ├── services/          # Serviços de API
+│   │   ├── models/           # Interfaces TypeScript
+│   │   ├── guards/           # Guards de rota
+│   │   ├── interceptors/     # Interceptors HTTP
+│   │   └── utils/            # Utilitários (DRY)
+│   ├── src/environments/     # Configurações de ambiente
+│   └── package.json
+├── docker-compose.yml         # Orquestração Docker
+├── .gitignore
+└── README.md
 ```
 
-## Funcionalidades
+## Instalação e Execução
 
-### Incidentes
-- CRUD completo de incidentes
-- Filtros por status, prioridade e busca textual
-- Paginação e ordenação
-- Gestão de tags
-- Controle de status (ABERTA, EM_ANDAMENTO, RESOLVIDA, CANCELADA)
-- Controle de prioridade (BAIXA, MEDIA, ALTA)
-
-### Comentários
-- Criação de comentários em incidentes
-- Listagem paginada por incidente
-- Exclusão de comentários
-
-### Autenticação
-- Autenticação JWT
-- Usuários seed para demonstração
-- Proteção de endpoints
-
-### Estatísticas
-- Contadores por status
-- Contadores por prioridade
-- Total de incidentes
-
-## Usuários de Demonstração
-
-| Email | Senha | Perfil |
-|-------|-------|---------|
-| admin@incidents.com | password | ROLE_ADMIN |
-| user@incidents.com | password | ROLE_USER |
-
-## Execução Local
-
-### Pré-requisitos
-- Docker e Docker Compose
-- Java 17+ (para desenvolvimento local)
-- Maven 3.6+
-
-### Com Docker Compose
+### Método 1: Docker Compose (Recomendado)
 
 1. Clone o repositório:
 ```bash
-git clone <url-do-repositorio>
-cd desafio-fullstack-springboot
+git clone https://github.com/SSilvestreS/desafio-backend-springboot.git
+cd desafio-backend-springboot
 ```
 
-2. Execute a aplicação:
+2. Execute o script de inicialização:
 ```bash
-docker-compose up --build
+# Windows
+.\start.bat
+
+# Linux/Mac
+./start.sh
 ```
 
-3. Acesse:
-- Backend: http://localhost:8080
+3. Aguarde a inicialização completa (aproximadamente 2-3 minutos)
+
+4. Acesse as aplicações:
+- Frontend: http://localhost:4200
+- Backend API: http://localhost:8080
 - Swagger UI: http://localhost:8080/swagger-ui/index.html
-- API Docs: http://localhost:8080/v3/api-docs
 
-### Desenvolvimento Local
+### Método 2: Execução Manual
 
-1. Configure o banco PostgreSQL
-2. Execute as migrations:
+1. Clone o repositório:
+```bash
+git clone https://github.com/SSilvestreS/desafio-backend-springboot.git
+cd desafio-backend-springboot
+```
+
+2. Inicie o banco de dados:
+```bash
+docker run -d --name postgres-incidents \
+  -e POSTGRES_DB=incidents_db \
+  -e POSTGRES_USER=incidents_user \
+  -e POSTGRES_PASSWORD=incidents_pass \
+  -p 5432:5432 \
+  postgres:15
+```
+
+3. Compile e execute o backend:
 ```bash
 cd backend
-mvn flyway:migrate
-```
-
-3. Execute a aplicação:
-```bash
+mvn clean install
 mvn spring-boot:run
 ```
 
-## Endpoints da API
+4. Em outro terminal, compile e execute o frontend:
+```bash
+cd frontend
+npm install
+npm start
+```
+
+## Configuração
+
+### Variáveis de Ambiente
+
+O projeto utiliza as seguintes variáveis de ambiente (configuradas no docker-compose.yml):
+
+- `POSTGRES_DB`: incidents_db
+- `POSTGRES_USER`: incidents_user
+- `POSTGRES_PASSWORD`: incidents_pass
+- `JWT_SECRET`: Chave secreta para JWT
+- `JWT_EXPIRATION`: 24h
+
+### Portas Utilizadas
+
+- **8080**: Backend Spring Boot
+- **4200**: Frontend Angular
+- **5432**: PostgreSQL
+
+## Funcionalidades
 
 ### Autenticação
-- `POST /auth/login` - Login e obtenção do token JWT
+- Login com JWT
+- Usuários padrão:
+  - admin@incidents.com / password
+  - user@incidents.com / password
 
-### Incidentes
-- `GET /incidents` - Listar incidentes (com filtros e paginação)
-- `GET /incidents/{id}` - Buscar incidente por ID
-- `POST /incidents` - Criar incidente
-- `PUT /incidents/{id}` - Atualizar incidente
-- `DELETE /incidents/{id}` - Excluir incidente
-- `PATCH /incidents/{id}/status` - Atualizar status
+### Gestão de Incidentes
+- Criar, editar, visualizar e excluir incidentes
+- Filtros por status, prioridade e busca textual
+- Paginação
+- Estatísticas em tempo real
 
 ### Comentários
-- `GET /comments/incident/{incidentId}` - Listar comentários por incidente
-- `POST /comments` - Criar comentário
+- Adicionar comentários aos incidentes
+- Visualizar histórico de comentários
+- Exclusão de comentários
+
+### Cache
+- Cache de leitura com Caffeine
+- Invalidação automática em operações de escrita
+- Configuração otimizada para performance
+
+## API Endpoints
+
+### Autenticação
+- `POST /auth/login` - Login e geração de token JWT
+
+### Incidentes
+- `GET /incidents` - Listar incidentes com filtros e paginação
+- `POST /incidents` - Criar novo incidente
+- `GET /incidents/{id}` - Obter incidente específico
+- `PUT /incidents/{id}` - Atualizar incidente
+- `DELETE /incidents/{id}` - Excluir incidente
+- `PATCH /incidents/{id}/status` - Alterar status do incidente
+
+### Comentários
+- `GET /comments/incident/{incidentId}` - Listar comentários do incidente
+- `POST /comments` - Criar novo comentário
 - `DELETE /comments/{id}` - Excluir comentário
 
 ### Estatísticas
-- `GET /stats/incidents` - Estatísticas dos incidentes
+- `GET /stats/incidents` - Estatísticas de incidentes
 
-## Exemplos de Uso
+## Documentação da API
 
-### Login
-```bash
-curl -X POST http://localhost:8080/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@incidents.com","password":"password"}'
-```
-
-### Criar Incidente
-```bash
-curl -X POST http://localhost:8080/incidents \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <seu-token>" \
-  -d '{
-    "titulo":"Erro 500 na API",
-    "descricao":"Falha ao processar requisição",
-    "prioridade":"ALTA",
-    "status":"ABERTA",
-    "responsavelEmail":"dev@exemplo.com",
-    "tags":["api","bug","erro500"]
-  }'
-```
-
-### Listar Incidentes
-```bash
-curl -H "Authorization: Bearer <seu-token>" \
-  "http://localhost:8080/incidents?page=0&size=10&status=ABERTA&sort=dataAbertura,desc"
-```
-
-## Modelo de Dados
-
-### Incident
-- `id` (UUID) - Identificador único
-- `titulo` (String, 5-120 chars) - Título do incidente
-- `descricao` (String, 0-5000 chars) - Descrição detalhada
-- `prioridade` (Enum: BAIXA, MEDIA, ALTA)
-- `status` (Enum: ABERTA, EM_ANDAMENTO, RESOLVIDA, CANCELADA)
-- `responsavelEmail` (String) - Email do responsável
-- `tags` (List<String>) - Tags para categorização
-- `dataAbertura` (DateTime) - Data de abertura
-- `dataAtualizacao` (DateTime) - Data da última atualização
-
-### Comment
-- `id` (UUID) - Identificador único
-- `incidentId` (UUID) - Referência ao incidente
-- `autor` (String, 1-120 chars) - Nome do autor
-- `mensagem` (String, 1-2000 chars) - Conteúdo do comentário
-- `dataCriacao` (DateTime) - Data de criação
-
-## Migrations
-
-O projeto utiliza Flyway para gerenciar o esquema do banco:
-
-1. `V1__Create_incident_table.sql` - Criação da tabela de incidentes
-2. `V2__Create_comment_table.sql` - Criação da tabela de comentários
-3. `V3__Create_incident_tags_table.sql` - Criação da tabela de tags
-
-## Segurança
-
-- Autenticação JWT obrigatória para todos os endpoints
-- Swagger UI acessível sem autenticação
-- Senhas criptografadas com BCrypt
-- Tokens com expiração configurável (24h por padrão)
+A documentação completa da API está disponível através do Swagger UI:
+- URL: http://localhost:8080/swagger-ui/index.html
+- Especificação OpenAPI: http://localhost:8080/v3/api-docs
 
 ## Desenvolvimento
 
-### Estrutura de Pacotes
-- `config` - Configurações do Spring
-- `controller` - Controllers REST
-- `dto` - Objetos de transferência de dados
-- `model` - Entidades JPA
-- `repository` - Interfaces de acesso a dados
-- `security` - Configurações de segurança e JWT
+### Estrutura de Desenvolvimento
 
-### Validações
-- Validações Bean Validation nas entidades e DTOs
-- Mensagens de erro personalizadas
-- Validação de email e tamanhos de campos
+O projeto segue os princípios SOLID e implementa o critério DRY (Don't Repeat Yourself):
 
-### Tratamento de Erros
-- Respostas HTTP padronizadas
-- Códigos de status apropriados (200, 201, 400, 401, 404, 500)
-- Mensagens de erro descritivas
+#### Backend - Utilitários (DRY)
+- `IncidentUtils`: Normalização de tags, auditoria de atualização, filtros
+- Reutilização em todos os controllers
+
+#### Frontend - Utilitários (DRY)
+- `FormUtils`: Normalização de formulários, construção de query params
+- `ApiService`: Cliente genérico para todas as APIs
+- Reutilização em todos os componentes
+
+### Cache com Caffeine
+
+O sistema implementa cache de leitura com invalidação automática:
+
+- **Configuração**: `application.yml`
+- **Anotações**: `@Cacheable` em GETs, `@CacheEvict` em operações de escrita
+- **Cache Names**: incidents, incidentById, stats, commentsByIncident
+
+### Migrations
+
+O banco de dados é gerenciado através do Flyway:
+
+1. `V1__Create_incident_table.sql` - Tabela de incidentes
+2. `V2__Create_comment_table.sql` - Tabela de comentários
+3. `V3__Create_incident_tags_table.sql` - Tabela de tags
+
+## Scripts de Automação
+
+### Windows (start.bat)
+```batch
+@echo off
+echo Iniciando Sistema de Gestao de Incidentes...
+echo.
+
+echo Parando containers existentes...
+docker compose down
+
+echo Removendo imagens antigas...
+docker image prune -a -f
+
+echo Compilando e iniciando containers...
+docker compose up --build -d
+
+echo Aguardando inicializacao...
+timeout /t 30 /nobreak
+
+echo Verificando status dos containers...
+docker compose ps
+
+echo.
+echo Sistema iniciado com sucesso!
+echo Frontend: http://localhost:4200
+echo Backend: http://localhost:8080
+echo Swagger: http://localhost:8080/swagger-ui/index.html
+echo.
+pause
+```
+
+### Linux/Mac (start.sh)
+```bash
+#!/bin/bash
+
+echo "Iniciando Sistema de Gestao de Incidentes..."
+echo
+
+echo "Parando containers existentes..."
+docker compose down
+
+echo "Removendo imagens antigas..."
+docker image prune -a -f
+
+echo "Compilando e iniciando containers..."
+docker compose up --build -d
+
+echo "Aguardando inicializacao..."
+sleep 30
+
+echo "Verificando status dos containers..."
+docker compose ps
+
+echo
+echo "Sistema iniciado com sucesso!"
+echo "Frontend: http://localhost:4200"
+echo "Backend: http://localhost:8080"
+echo "Swagger: http://localhost:8080/swagger-ui/index.html"
+echo
+```
+
+### Script de Parada (stop.bat/stop.sh)
+```bash
+#!/bin/bash
+echo "Parando Sistema de Gestao de Incidentes..."
+docker compose down
+echo "Sistema parado com sucesso!"
+```
+
+## Troubleshooting
+
+### Problemas Comuns
+
+1. **Porta 8080 em uso**
+   - Verifique se não há outras aplicações usando a porta
+   - Altere a porta no docker-compose.yml se necessário
+
+2. **Erro de conexão com banco**
+   - Verifique se o PostgreSQL está rodando
+   - Confirme as credenciais no application.yml
+
+3. **Frontend não carrega**
+   - Verifique se o container frontend está rodando
+   - Confirme se a porta 4200 está livre
+
+4. **Erro de autenticação**
+   - Use as credenciais padrão: admin@incidents.com / password
+   - Verifique se o token JWT não expirou
+
+### Logs
+
+Para verificar logs dos containers:
+```bash
+# Todos os serviços
+docker compose logs
+
+# Backend específico
+docker compose logs backend
+
+# Frontend específico
+docker compose logs frontend
+```
+
+## Contribuição
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.

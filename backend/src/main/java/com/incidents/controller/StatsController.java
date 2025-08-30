@@ -5,6 +5,7 @@ import com.incidents.model.enums.Status;
 import com.incidents.repository.IncidentRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +26,7 @@ public class StatsController {
     }
     
     @GetMapping("/incidents")
+    @Cacheable(value = "stats", key = "'incidentStats'")
     @Operation(summary = "Estatísticas dos incidentes", description = "Retorna contadores por status e prioridade")
     public ResponseEntity<Map<String, Object>> getIncidentStats() {
         Map<String, Object> stats = new HashMap<>();

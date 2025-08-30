@@ -6,6 +6,8 @@ import com.incidents.repository.CommentRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -26,6 +28,7 @@ public class CommentController {
     }
     
     @GetMapping("/incident/{incidentId}")
+    @Cacheable(value = "commentsByIncident", key = "#incidentId + '_' + #pageable.pageNumber + '_' + #pageable.pageSize + '_' + #pageable.sort")
     @Operation(summary = "Listar comentários por incidente", description = "Retorna comentários de um incidente específico")
     public ResponseEntity<Page<Comment>> getCommentsByIncident(
             @PathVariable UUID incidentId,
@@ -35,6 +38,7 @@ public class CommentController {
     }
     
     @PostMapping
+    @CacheEvict(value = {"commentsByIncident", "incidentById"}, allEntries = true)
     @Operation(summary = "Criar comentário", description = "Cria um novo comentário")
     public ResponseEntity<Comment> createComment(@Valid @RequestBody CommentRequest request) {
         Comment comment = new Comment();
@@ -47,6 +51,7 @@ public class CommentController {
     }
     
     @DeleteMapping("/{id}")
+    @CacheEvict(value = {"commentsByIncident", "incidentById"}, allEntries = true)
     @Operation(summary = "Excluir comentário", description = "Exclui um comentário pelo ID")
     public ResponseEntity<Void> deleteComment(@PathVariable UUID id) {
         if (commentRepository.existsById(id)) {

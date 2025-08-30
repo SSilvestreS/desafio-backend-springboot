@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -34,9 +35,7 @@ public class Comment {
     @Column(name = "data_criacao", nullable = false)
     private LocalDateTime dataCriacao;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "incident_id", insertable = false, updatable = false)
-    private Incident incident;
+
     
     // Construtores
     public Comment() {
@@ -84,11 +83,5 @@ public class Comment {
         this.dataCriacao = dataCriacao;
     }
     
-    public Incident getIncident() {
-        return incident;
-    }
-    
-    public void setIncident(Incident incident) {
-        this.incident = incident;
-    }
+
 }

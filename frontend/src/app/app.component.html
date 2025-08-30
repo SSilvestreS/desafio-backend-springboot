@@ -1,0 +1,16 @@
+<div class="app-container">
+  <nav class="navbar" *ngIf="authService.isAuthenticated()">
+    <div class="nav-brand">
+      <h1>Gestão de Incidentes</h1>
+    </div>
+    <div class="nav-menu">
+      <a routerLink="/incidents" routerLinkActive="active">Incidentes</a>
+      <a routerLink="/incidents/new" routerLinkActive="active">Novo Incidente</a>
+      <button (click)="logout()" class="btn-logout">Sair</button>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

@@ -1,0 +1,188 @@
+<div class="incident-detail-container">
+  <!-- Cabeçalho com navegação -->
+  <div class="detail-header">
+    <button class="btn btn-secondary" (click)="goBack()">
+      ← Voltar
+    </button>
+    <h1>Detalhes do Incidente</h1>
+    <button class="btn btn-primary" (click)="editIncident()" *ngIf="incident">
+      ✏️ Editar
+    </button>
+  </div>
+
+  <!-- Estado de carregamento -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Carregando incidente...</p>
+  </div>
+
+  <!-- Mensagens de erro e sucesso -->
+  <div class="alert alert-error" *ngIf="error">
+    {{ error }}
+  </div>
+  
+  <div class="alert alert-success" *ngIf="success">
+    {{ success }}
+  </div>
+
+  <!-- Detalhes do incidente -->
+  <div *ngIf="incident && !loading" class="incident-details">
+    <!-- Card principal do incidente -->
+    <div class="incident-card">
+      <div class="incident-header">
+        <div class="incident-title-section">
+          <h2>{{ incident.titulo }}</h2>
+          <div class="incident-meta">
+            <span class="incident-id">#{{ incident.id.slice(0, 8) }}</span>
+            <span class="incident-date">
+              Criado em {{ formatDate(incident.dataAbertura) }}
+            </span>
+            <span class="incident-update" *ngIf="incident.dataAtualizacao !== incident.dataAbertura">
+              Atualizado em {{ formatDate(incident.dataAtualizacao) }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="incident-status-section">
+          <div class="status-display">
+            <span class="status-badge" [class]="getStatusClass(incident.status)">
+              {{ incident.status }}
+            </span>
+            <button 
+              class="btn btn-outline" 
+              (click)="toggleStatusForm()"
+              title="Alterar status"
+            >
+              🔄
+            </button>
+          </div>
+          
+          <div class="priority-display">
+            <span class="priority-badge" [class]="getPriorityClass(incident.prioridade)">
+              {{ incident.prioridade }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulário de mudança de status -->
+      <div *ngIf="showStatusForm" class="status-form-section">
+        <form [formGroup]="statusForm" (ngSubmit)="onSubmitStatus()" class="status-form">
+          <div class="form-group">
+            <label for="new-status">Novo Status:</label>
+            <select id="new-status" formControlName="status" class="form-control">
+              <option *ngFor="let status of statuses" [value]="status">
+                {{ status }}
+              </option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="toggleStatusForm()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary">
+              Atualizar Status
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Descrição -->
+      <div class="incident-description" *ngIf="incident.descricao">
+        <h3>Descrição</h3>
+        <p>{{ incident.descricao }}</p>
+      </div>
+
+      <!-- Informações adicionais -->
+      <div class="incident-info">
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Responsável:</label>
+            <span class="info-value">{{ incident.responsavelEmail }}</span>
+          </div>
+          
+          <div class="info-item">
+            <label>Tags:</label>
+            <div class="tags-list" *ngIf="incident.tags && incident.tags.length > 0">
+              <span *ngFor="let tag of incident.tags" class="tag">
+                {{ tag }}
+              </span>
+            </div>
+            <span *ngIf="!incident.tags || incident.tags.length === 0" class="no-tags">
+              Sem tags
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seção de comentários -->
+    <div class="comments-section">
+      <div class="comments-header">
+        <h3>Comentários ({{ comments.length }})</h3>
+        <button 
+          class="btn btn-primary" 
+          (click)="toggleCommentForm()"
+        >
+          {{ showCommentForm ? 'Cancelar' : '+ Adicionar Comentário' }}
+        </button>
+      </div>
+
+      <!-- Formulário de comentário -->
+      <div *ngIf="showCommentForm" class="comment-form-section">
+        <form [formGroup]="commentForm" (ngSubmit)="onSubmitComment()" class="comment-form">
+          <div class="form-group">
+            <label for="comment-message">Mensagem:</label>
+            <textarea 
+              id="comment-message" 
+              formControlName="mensagem" 
+              class="form-control"
+              rows="4"
+              placeholder="Digite seu comentário..."
+              [class.is-invalid]="commentForm.get('mensagem')?.invalid && commentForm.get('mensagem')?.touched"
+            ></textarea>
+            <div class="error-message" *ngIf="getFieldError('mensagem')">
+              {{ getFieldError('mensagem') }}
+            </div>
+            <small class="form-help">Máximo 2000 caracteres</small>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="toggleCommentForm()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="commentForm.invalid">
+              Adicionar Comentário
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Lista de comentários -->
+      <div class="comments-list">
+        <div *ngIf="comments.length === 0" class="no-comments">
+          <p>Nenhum comentário ainda. Seja o primeiro a comentar!</p>
+        </div>
+        
+        <div *ngFor="let comment of comments" class="comment-item">
+          <div class="comment-header">
+            <div class="comment-author">
+              <strong>{{ comment.autor }}</strong>
+              <span class="comment-date">{{ formatDate(comment.dataCriacao) }}</span>
+            </div>
+            <button 
+              class="btn-icon btn-delete" 
+              (click)="deleteComment(comment.id)"
+              [disabled]="deletingComment === comment.id"
+              title="Excluir comentário"
+            >
+              {{ deletingComment === comment.id ? '⏳' : '🗑️' }}
+            </button>
+          </div>
+          <div class="comment-message">
+            {{ comment.mensagem }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

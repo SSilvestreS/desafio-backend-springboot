@@ -1,0 +1,51 @@
+<div class="login-container">
+  <div class="login-card">
+    <h2>Login - Gestão de Incidentes</h2>
+    
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input 
+          type="email" 
+          id="email" 
+          formControlName="email" 
+          placeholder="admin@incidents.com"
+          class="form-control"
+        >
+        <div class="error" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+          Email válido é obrigatório
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Senha:</label>
+        <input 
+          type="password" 
+          id="password" 
+          formControlName="password" 
+          placeholder="password"
+          class="form-control"
+        >
+        <div class="error" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+          Senha é obrigatória
+        </div>
+      </div>
+
+      <div class="error-message" *ngIf="error">{{ error }}</div>
+
+      <button 
+        type="submit" 
+        [disabled]="loginForm.invalid || loading"
+        class="btn-primary"
+      >
+        {{ loading ? 'Entrando...' : 'Entrar' }}
+      </button>
+    </form>
+
+    <div class="demo-credentials">
+      <h4>Credenciais de Demonstração:</h4>
+      <p><strong>Admin:</strong> admin@incidents.com / password</p>
+      <p><strong>Usuário:</strong> user@incidents.com / password</p>
+    </div>
+  </div>
+</div>

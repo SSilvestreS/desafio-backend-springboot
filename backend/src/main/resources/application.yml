@@ -26,6 +26,12 @@ spring:
     jwt:
       secret: ${JWT_SECRET:aW5jaWRlbnRzX2p3dF9zZWNyZXRfa2V5XzIwMjRfdmVyeV9sb25nX2FuZF9zZWN1cmVfYmFzZTY0}
       expiration: 86400000 # 24 horas
+  
+  cache:
+    type: caffeine
+    cache-names: incidents, incidentById, stats, commentsByIncident
+    caffeine:
+      spec: maximumSize=10000,expireAfterWrite=60s
 
 server:
   port: 8080
@@ -37,10 +43,46 @@ springdoc:
     path: /swagger-ui/index.html
     operations-sorter: method
     tags-sorter: alpha
+    doc-expansion: none
+    default-models-expand-depth: 1
+    default-model-expand-depth: 1
+    display-request-duration: true
+    filter: true
+    show-common-extensions: true
+    try-it-out-enabled: true
   info:
     title: API de Gestão de Ocorrências
-    description: Sistema completo para gestão de incidentes e ocorrências
+    description: |
+      Sistema completo para gestão de incidentes e ocorrências
+      
+      ## Funcionalidades
+      - **Incidentes**: CRUD completo com filtros e paginação
+      - **Comentários**: Sistema de comentários por incidente
+      - **Autenticação**: JWT com perfis de usuário
+      - **Estatísticas**: Contadores e relatórios
+      - **Cache**: Cache Caffeine para melhor performance
+      
+      ## Como usar
+      1. Faça login em `/auth/login` para obter o token JWT
+      2. Use o token no header `Authorization: Bearer {token}`
+      3. Explore os endpoints disponíveis
+      
+      ## Credenciais de teste
+      - **Admin**: admin@incidents.com / password
+      - **Usuário**: user@incidents.com / password
     version: 1.0.0
     contact:
       name: Equipe de Desenvolvimento
       email: dev@incidents.com
+    license:
+      name: MIT
+      url: https://opensource.org/licenses/MIT
+  tags:
+    - name: Incidentes
+      description: Gestão completa de incidentes
+    - name: Comentários
+      description: Sistema de comentários por incidente
+    - name: Autenticação
+      description: Autenticação e autorização JWT
+    - name: Estatísticas
+      description: Relatórios e contadores

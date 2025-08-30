@@ -30,6 +30,16 @@ services:
     networks:
       - incidents_network
 
+  frontend:
+    build: ./frontend
+    container_name: incidents_frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    networks:
+      - incidents_network
+
 volumes:
   postgres_data:
 
