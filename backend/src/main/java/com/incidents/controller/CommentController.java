@@ -8,12 +8,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -28,12 +27,10 @@ public class CommentController {
     }
     
     @GetMapping("/incident/{incidentId}")
-    @Cacheable(value = "commentsByIncident", key = "#incidentId + '_' + #pageable.pageNumber + '_' + #pageable.pageSize + '_' + #pageable.sort")
+    @Cacheable(value = "commentsByIncident", key = "#incidentId")
     @Operation(summary = "Listar comentários por incidente", description = "Retorna comentários de um incidente específico")
-    public ResponseEntity<Page<Comment>> getCommentsByIncident(
-            @PathVariable UUID incidentId,
-            Pageable pageable) {
-        Page<Comment> comments = commentRepository.findByIncidentIdOrderByDataCriacaoDesc(incidentId, pageable);
+    public ResponseEntity<List<Comment>> getCommentsByIncident(@PathVariable UUID incidentId) {
+        List<Comment> comments = commentRepository.findByIncidentIdOrderByDataCriacaoDesc(incidentId);
         return ResponseEntity.ok(comments);
     }
     
